@@ -1,6 +1,6 @@
 # ========================================================================================
-# Project:  ag_rd_stock
-# Subject:  Prepare data
+# Project:  gtap_pub_ag_rd_stock
+# Subject:  Functions
 # Author:   Michiel van Dijk
 # Contact:  michiel.vandijk@wur.nl
 # ========================================================================================

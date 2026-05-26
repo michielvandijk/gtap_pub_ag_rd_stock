@@ -1,5 +1,5 @@
 # ========================================================================================
-# Project:  ag_rd_stock
+# Project:  gtap_pub_ag_rd_stock
 # Subject:  Script to compute public agricultural R&D stock
 # Author:   Michiel van Dijk, Zuzana Smeets Kristkova & Yan Jin
 # Contact:  michiel.vandijk@wur.nl

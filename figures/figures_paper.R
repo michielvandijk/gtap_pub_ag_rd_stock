@@ -1,6 +1,6 @@
 # ========================================================================================
-# Project:  ag_rd_stock
-# Subject:  Prepare data
+# Project:  gtap_pub_ag_rd_stock
+# Subject:  Figures
 # Author:   Michiel van Dijk
 # Contact:  michiel.vandijk@wur.nl
 # ========================================================================================
@@ -140,7 +140,7 @@ gtap_base_year <- 2017
 rd_stock_gtap_by <- rd_stock_gtap_db |> 
   filter(year == gtap_base_year) |>
   mutate(bin = cut(rd_stock, breaks = breaks, include.lowest = TRUE, labels = labels)) |>
-  select(gtap11, bin, rd_stock) 
+  select(gtap12, bin, rd_stock) 
 
 # Plot
 world_map |>
@@ -164,7 +164,7 @@ world_map |>
 rd_stock_gtap_by |>
   arrange(desc(rd_stock)) |>
   slice_head(n = 10)  |>
-  ggplot(aes(x = reorder(gtap11, -rd_stock), y = rd_stock)) +
+  ggplot(aes(x = reorder(gtap12, -rd_stock), y = rd_stock)) +
   geom_bar(stat = "identity", fill = cb_pal[6]) +
   geom_text(aes(label = comma(round(rd_stock, 0))), vjust = -0.5, size = 3) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.05)),
