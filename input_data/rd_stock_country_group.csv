@@ -1,0 +1,191 @@
+group,country,iso3c
+F,Afghanistan,AFG
+F,Angola,AGO
+F,United Arab Emirates,ARE
+E,Argentina,ARG
+D,Armenia,ARM
+F,American Samoa,ASM
+E,Antigua & Barbuda,ATG
+B,Australia,AUS
+C,Austria,AUT
+D,Azerbaijan,AZE
+F,Burundi,BDI
+C,Belgium,BEL
+F,Benin,BEN
+F,Burkina Faso,BFA
+F,Bangladesh,BGD
+D,Bulgaria,BGR
+E,Bahamas,BHS
+D,Bosnia & Herzegovina,BIH
+D,Belarus,BLR
+E,Belize,BLZ
+E,Bermuda,BMU
+E,Bolivia,BOL
+E,Brazil,BRA
+E,Barbados,BRB
+F,Brunei,BRN
+F,Botswana,BWA
+F,Central African Republic,CAF
+C,Canada,CAN
+C,Switzerland,CHE
+E,Chile,CHL
+F,China,CHN
+F,Côte d’Ivoire,CIV
+F,Cameroon,CMR
+F,Congo - Kinshasa,COD
+F,Congo - Brazzaville,COG
+F,Cook Islands,COK
+E,Colombia,COL
+F,Comoros,COM
+F,Cape Verde,CPV
+E,Costa Rica,CRI
+E,Cuba,CUB
+D,Cyprus,CYP
+D,Czechia,CZE
+C,Germany,DEU
+E,Dominica,DMA
+C,Denmark,DNK
+E,Dominican Republic,DOM
+F,Algeria,DZA
+F,Ecuador,ECU
+F,Egypt,EGY
+F,Eritrea,ERI
+C,Spain,ESP
+D,Estonia,EST
+F,Ethiopia,ETH
+C,Finland,FIN
+F,Fiji,FJI
+C,France,FRA
+F,Micronesia (Federated States of),FSM
+F,Gabon,GAB
+C,United Kingdom,GBR
+F,Ghana,GHA
+F,Guinea,GIN
+E,Guadeloupe,GLP
+F,Gambia,GMB
+F,Guinea-Bissau,GNB
+C,Greece,GRC
+E,Grenada,GRD
+E,Guatemala,GTM
+F,Guam,GUM
+E,Guyana,GUY
+F,Hong Kong SAR China,HKG
+E,Honduras,HND
+D,Croatia,HRV
+F,Haiti,HTI
+D,Hungary,HUN
+F,Indonesia,IDN
+F,India,IND
+C,Ireland,IRL
+F,Iran,IRN
+F,Iraq,IRQ
+C,Iceland,ISL
+F,Israel,ISR
+C,Italy,ITA
+E,Jamaica,JAM
+F,Jordan,JOR
+F,Japan,JPN
+D,Kazakhstan,KAZ
+F,Kenya,KEN
+D,Kyrgyzstan,KGZ
+F,Cambodia,KHM
+E,St. Kitts & Nevis,KNA
+F,South Korea,KOR
+F,Kuwait,KWT
+F,Laos,LAO
+F,Lebanon,LBN
+F,Liberia,LBR
+F,Libya,LBY
+E,St. Lucia,LCA
+F,Sri Lanka,LKA
+F,Lesotho,LSO
+D,Lithuania,LTU
+C,Luxembourg,LUX
+D,Latvia,LVA
+F,Morocco,MAR
+D,Moldova,MDA
+E,Madagascar,MDG
+E,Mexico,MEX
+F,Marshall Islands,MHL
+F,North Macedonia,MKD
+F,Mali,MLI
+D,Malta,MLT
+F,Myanmar (Burma),MMR
+D,Montenegro,MNE
+F,Mongolia,MNG
+F,Northern Mariana Islands,MNP
+F,Mozambique,MOZ
+F,Mauritania,MRT
+E,Montserrat,MSR
+E,Martinique,MTQ
+F,Mauritius,MUS
+F,Malawi,MWI
+F,Malaysia,MYS
+F,Namibia,NAM
+F,New Caledonia,NCL
+F,Niger,NER
+F,Nigeria,NGA
+F,Nicaragua,NIC
+C,Netherlands,NLD
+C,Norway,NOR
+F,Nepal,NPL
+B,New Zealand,NZL
+F,Oman,OMN
+F,Pakistan,PAK
+E,Panama,PAN
+E,Peru,PER
+F,Philippines,PHL
+F,Palau,PLW
+F,Papua New Guinea,PNG
+D,Poland,POL
+E,Puerto Rico,PRI
+C,Portugal,PRT
+E,Paraguay,PRY
+F,French Polynesia,PYF
+F,Qatar,QAT
+D,Romania,ROU
+D,Russia,RUS
+F,Rwanda,RWA
+F,Saudi Arabia,SAU
+F,Sudan,SDN
+F,Senegal,SEN
+F,Singapore,SGP
+F,Solomon Islands,SLB
+F,Sierra Leone,SLE
+E,El Salvador,SLV
+F,Somalia,SOM
+D,Serbia,SRB
+F,São Tomé & Príncipe,STP
+F,Suriname,SUR
+D,Slovakia,SVK
+D,Slovenia,SVN
+C,Sweden,SWE
+F,Eswatini,SWZ
+F,Seychelles,SYC
+F,Syria,SYR
+F,Chad,TCD
+F,Togo,TGO
+F,Thailand,THA
+D,Tajikistan,TJK
+F,Tonga,TON
+E,Trinidad & Tobago,TTO
+F,Tunisia,TUN
+F,Turkey,TUR
+F,Tuvalu,TUV
+F,Taiwan,TWN
+F,Tanzania,TZA
+F,Uganda,UGA
+D,Ukraine,UKR
+E,Uruguay,URY
+A,United States,USA
+D,Uzbekistan,UZB
+E,St. Vincent & Grenadines,VCT
+E,Venezuela,VEN
+E,U.S. Virgin Islands,VIR
+F,Vietnam,VNM
+F,Vanuatu,VUT
+F,Samoa,WSM
+F,Yemen,YEM
+F,South Africa,ZAF
+F,Zambia,ZMB
+F,Zimbabwe,ZWE
