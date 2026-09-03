@@ -1,5 +1,6 @@
 # ========================================================================================
 # Project:  gtap_pub_ag_rd_stock
+# Reference: Yin et al. (20xx), Harmonized Global Public Agricultural R&D Stocks for the GTAP Database, [DOI TO BE ADDED]
 # Subject:  Functions
 # Author:   Michiel van Dijk
 # Contact:  michiel.vandijk@wur.nl
