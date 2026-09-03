@@ -30,7 +30,7 @@ gamma_weights <- function(lambda, delta, L, g = 0) {
     (k - g + 1)^(delta / (1 - delta)) * lambda^(k - g),
     0
   )
-  w <- w / sum(w)
+  w <- w / max(w)
   return(w)
 }
 
