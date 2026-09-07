@@ -122,44 +122,82 @@ rd_stock_db <- rd_investment_db |>
 # Change gtap12 into gtap11 and gtap12_name into gtap11_name for the 141 GTAP11.
 rd_stock_gtap_db <- rd_stock_db |>
   dplyr::select(-country) |>
-  left_join(iso3c_gtap) |>
+  left_join(iso3c_gtap, by = "iso3c") |>
   group_by(year, gtap12, gtap12_name) |>
   summarize(rd_stock = sum(rd_stock, na.rm = TRUE),
             .groups = "drop") 
 
-# Identify GTAP regions with no R&D data
+# Identify GTAP regions with no R&D stock data
 setdiff(rd_stock_gtap_db$gtap12, iso3c_gtap$gtap12)
 setdiff(iso3c_gtap$gtap12, rd_stock_gtap_db$gtap12)
 
-# Add zero for missing values. We focus on recent period afrom 2004, first GTAP year.
+# We focus on recent period from 2004, the first GTAP year.
+# Note that because of the long lags (max 50 years), the R&D stock in 2004 might be already
+# affected by the R&D investment in the 1950s for which data generally missing (except for a few countries).
+# This means that the R&D stock from 2011 (1961, first year of R&D observation plus lag of 50 years) onwards,
+# is 100% build using all investment in previous years. Depending on the assumed lag,
+# R&D stock before 2011 might also be estimated using all relevant R&D investment data.
+
 period <- c(2004:2022)
 
+# Add zero for missing regions and years
 rd_stock_gtap_db <- rd_stock_gtap_db |>
   filter(year %in% period) |>
   dplyr::select(-gtap12_name) |>
   complete(gtap12 = iso3c_gtap$gtap12, year = period, fill = list(rd_stock = 0))
 n_distinct(rd_stock_gtap_db$gtap12)
 
-# GTAP base year
-gtap_base_year <- 2017
+# Create HAR object
+m <- rd_stock_gtap_db |>
+  dplyr::select(REG = gtap12, YEAR = year, VALUE = rd_stock) |>
+  arrange(REG, YEAR) |>
+  tidyr::pivot_wider(names_from = REG, values_from = VALUE) |>
+  arrange(YEAR) |>
+  tibble::column_to_rownames("YEAR") |>
+  as.matrix()
+names(dimnames(m)) <- c("YEAR", "REG")
 
-rd_stock_gtap_by <- rd_stock_gtap_db |>
-  filter(year == gtap_base_year) |>
-  dplyr::select(REG = gtap12, VALUE = rd_stock) |>
-  arrange(REG)
+rd_stock_gtap_har <- list(RDST = m)
+
+
+# ========================================================================================
+# R&D INVESTMENT -------------------------------------------------------------------------
+# ========================================================================================
+
+# For completeness, we also create a har file with R&D investment data aggregated to GTAP12.
+
+# We aggregate to GTAP12 with 145 regions. 
+# Change gtap12 into gtap11 and gtap12_name into gtap11_name for the 141 GTAP11.
+rd_investment_gtap_db <- rd_investment_db |>
+  dplyr::select(-country) |>
+  left_join(iso3c_gtap, by = "iso3c") |>
+  group_by(year, gtap12, gtap12_name) |>
+  summarize(rd_investment = sum(rd_investment, na.rm = TRUE),
+            .groups = "drop")
+
+# Identify GTAP regions with no R&D data
+setdiff(rd_investment_gtap_db$gtap12, iso3c_gtap$gtap12)
+setdiff(iso3c_gtap$gtap12, rd_investment_gtap_db$gtap12)
+
+# Add zero for missing regions and years
+rd_investment_gtap_db <- rd_investment_gtap_db |>
+  dplyr::select(-gtap12_name) |>
+  complete(gtap12 = iso3c_gtap$gtap12,
+           year = c(min(rd_investment_db$year):max(rd_investment_db$year)),
+                    fill = list(rd_investment = 0))
+n_distinct(rd_investment_gtap_db$gtap12)
 
 # Create HAR object
-# Note. 0 values will be dropped.
-rd_stock_gtap_by_har <- list(
-  RD = array(
-    rd_stock_gtap_by$VALUE,
-    dim = c(nrow(rd_stock_gtap_by), 1),
-    dimnames = list(
-      REG = rd_stock_gtap_by$REG,
-      COL = "AGRD"
-    )
-  )
-)
+m2 <- rd_investment_gtap_db |>
+  dplyr::select(REG = gtap12, YEAR = year, VALUE = rd_investment) |>
+  arrange(REG, YEAR) |>
+  tidyr::pivot_wider(names_from = REG, values_from = VALUE) |>
+  arrange(YEAR) |>
+  tibble::column_to_rownames("YEAR") |>
+  as.matrix()
+names(dimnames(m2)) <- c("YEAR", "REG")
+
+rd_investment_gtap_har <- list(RDIN = m2)
 
 
 # ========================================================================================
@@ -171,8 +209,9 @@ rd_stock_gtap_by_har <- list(
 temp_path <- here("output_data")
 
 # csv file
-write_csv(rd_stock_gtap_db, file.path(temp_path, "rd_stock_gtap_db.csv"))
+write_csv(rd_stock_gtap_db, file.path(temp_path, "ag_rd_stock_gtap_db.csv"))
+write_csv(rd_investment_gtap_db, file.path(temp_path, "ag_rd_investment_gtap_db.csv"))
 
 # base year file to har for further use in GTAP
-write_har(rd_stock_gtap_by_har, file.path(temp_path, "rd_ag_gtap_base_year.har"))
-
+write_har(rd_stock_gtap_har, file.path(temp_path, "ag_rd_st_gtap.har"))
+write_har(rd_investment_gtap_har, file.path(temp_path, "ag_rd_in_gtap.har"))

@@ -11,8 +11,8 @@ if(!require(pacman)) install.packages("pacman")
 library(pacman)
 
 # Load key packages
-p_load(here, tidyverse, readxl, stringr, scales, glue, dplyr, HARr, rnaturalearth,countrycode,
-       classInt)
+p_load(here, tidyverse, readxl, stringr, scales, glue, dplyr, HARr, rnaturalearth, countrycode,
+       slider)
 
 # R options
 options(scipen = 999)
@@ -23,7 +23,14 @@ options(digits = 4)
 # ========================================================================================
 
 # R&D stock data
-rd_stock_gtap_db <- read_csv(here("output_data/rd_stock_gtap_db.csv"))
+rd_stock_gtap_db <- read_csv(here("output_data/ag_rd_stock_gtap_db.csv"))
+
+# R&D investment data
+rd_investment_db <- read_csv(here("output_data/ag_rd_investment_gtap_db.csv"))
+
+# Agricultural value added in 2017 PPP$ data from GRAPE macro database
+ag_va_db <- read_excel(here("input_data/macro_db_v1.0.0.xlsx")) |>
+  dplyr::select(country, iso3c, year, ag_gdp_ppp) 
 
 # GTAP 11 regional aggregation
 iso3c_gtap <- read.csv(here::here("input_data/iso3c_gtap.csv"))
@@ -104,12 +111,67 @@ gamma_df |>
   scale_x_continuous(breaks = pretty_breaks()) +
   scale_color_manual(values = cb_pal[c(2,3,4,6,7,8)]) +
   theme_classic() +
-  theme(legend.position = c(0.7,0.8))
+  theme(legend.position = "bottom")
 
 
 # ========================================================================================
+# PROCESS AGRICULTURAL VALUE ADDED DATA --------------------------------------------------
+# ======================================================================================== 
+
+# We aggregate to GTAP12 with 145 regions.
+ag_va_gtap_db <- ag_va_db |>
+  dplyr::select(-country) |>
+  left_join(iso3c_gtap, by = "iso3c") |>
+  group_by(year, gtap12, gtap12_name) |>
+  summarize(ag_gdp_ppp = sum(ag_gdp_ppp, na.rm = TRUE),
+            .groups = "drop")
+
+# Identify GTAP regions with no R&D data
+setdiff(ag_va_gtap_db$gtap12, iso3c_gtap$gtap12)
+setdiff(iso3c_gtap$gtap12, ag_va_gtap_db$gtap12)
+
+
+# ========================================================================================
+# PUBLIC AGRICULTURAL R&D INVESTMENT -----------------------------------------------------
+# ========================================================================================
+
+# 3 year rolling mean
+rd_investment_gtap_3y_db <- rd_investment_gtap_db |>
+  arrange(gtap12, year) |>
+  group_by(gtap12) |>
+  mutate(rd_investment = slide_dbl(rd_investment, mean, .before = 3, .complete = TRUE)) |>
+  na.omit()
+
+# Select top 10
+top_rd_investment <- rd_investment_gtap_3y_db |>
+  filter(year %in% c(2022)) |>
+  group_by(year) |>
+  slice_max(rd_investment, n = 8)
+
+rd_investment_gtap_3y_db |>
+  filter(gtap12 %in% top_rd_investment$gtap12) |>
+  ggplot(aes(x = year, y = rd_investment,
+             color = gtap12, group = gtap12, shape = gtap12)) +
+  geom_line(linewidth = 0.5) +
+  geom_point(size = 2) +
+  scale_shape_manual(values = 1:12) +
+  scale_color_manual(values = unname(cb_pal)) +
+  scale_x_continuous(limits = c(1973, 2022)) +  
+  scale_y_continuous(labels = comma) +
+  labs(x = NULL, y = "Million 2017 USD PPP", 
+       color = NULL, shape = NULL) +
+  theme_classic() +
+  theme(legend.position = "bottom") +
+  guides(color = guide_legend(nrow = 1),
+         shape = guide_legend(nrow = 1))
+
+
+
+# ========================================================================================
+# PUBLIC AGRICULTURAL R&D STOCK ----------------------------------------------------------
+# ========================================================================================
+
 # MAP ------------------------------------------------------------------------------------
-# ========================================================================================
 
 # Obtain world map and merge polygons to so they reflect the GTAP aggregation
 world_map <- ne_countries(returnclass = 'sf') |>
@@ -125,50 +187,55 @@ countrycode(setdiff(iso3c_gtap$iso3c, world_map$iso3c), "iso3c", "country.name")
 countrycode(setdiff(world_map$iso3c, iso3c_gtap$iso3c), "iso3c", "country.name")
 setdiff(world_map$iso3c, iso3c_gtap$iso3c)
 
-# Jenks natural breaks, which minimizes the variance within bins and maximizes the variance between bins. 
-breaks <- classIntervals(rd_stock_gtap_db$rd_stock, n = 5, style = "jenks")$brks
-
-# Proper break format
-b_int <- round(breaks)
+# Create figure labels
+breaks <- c(0, 15, 50, 250, Inf)
 labels <- paste0(
-  format(head(b_int, -1), big.mark = ",", trim = TRUE),
+  format(head(breaks, -1), big.mark = ",", trim = TRUE),
   " – ",
-  format(tail(b_int, -1), big.mark = ",", trim = TRUE)
+  format(tail(breaks, -1), big.mark = ",", trim = TRUE)
 )
+labels[4] <- "> 250"
 
-# Only select base year data
+# Link agricultural value added data to GTAP regions
+# Only select base year data and countries with data
 gtap_base_year <- 2017
 rd_stock_gtap_by <- rd_stock_gtap_db |> 
+  left_join(ag_va_gtap_db, by = c("gtap12", "year")) |>
   filter(year == gtap_base_year) |>
-  mutate(bin = cut(rd_stock, breaks = breaks, include.lowest = TRUE, labels = labels)) |>
-  select(gtap12, bin, rd_stock) 
-
+  filter(!(is.na(ag_gdp_ppp) | ag_gdp_ppp == 0)) |>
+  mutate(rd_stock_norm = rd_stock / (ag_gdp_ppp/1000000),
+         rd_stock_norm_bin = cut(rd_stock_norm, 
+                                 breaks = breaks, 
+                                 labels = labels,
+                                 include.lowest = TRUE))
 # Plot
 world_map |>
   filter(iso3c != "ATA") |>
   left_join(iso3c_gtap, by = c("iso3c")) |>
   left_join(rd_stock_gtap_by) |>
-  mutate(bin = fct_na_value_to_level(bin, "No data")) |>
+  mutate(rd_stock_norm_bin = fct_na_value_to_level(rd_stock_norm_bin, "No data")) |>
   ggplot() +
-  geom_sf(aes(fill = bin), colour = "black") +
-  scale_fill_manual(values = cb_pal[c(2,3,4,7,8,9)]) +
+  geom_sf(aes(fill = rd_stock_norm_bin), colour = "black") +
+  scale_fill_manual(
+    values = cb_pal[c(2,3,4,7,9)],
+    guide = guide_legend(title.position = "top", title.hjust = 0.5)) +
   theme_void() +
   theme(legend.position = "bottom") +
-  labs(fill = "Public agricultural\nR&D stock (million 2017 PPP$)")
+  labs(fill = "Public agricultrual R&D stock per million\n2017 PPP$ of agricultural value added")
 
 
-# ========================================================================================
 # BAR CHART ------------------------------------------------------------------------------
-# ========================================================================================
 
 # Select top 10 in terms of stock
 rd_stock_gtap_by |>
-  arrange(desc(rd_stock)) |>
+  arrange(desc(rd_stock_norm)) |>
+  filter(!gtap12 %in% c("sgp", "xef")) |>
   slice_head(n = 10)  |>
-  ggplot(aes(x = reorder(gtap12, -rd_stock), y = rd_stock)) +
+  ggplot(aes(x = reorder(gtap12, -rd_stock_norm), y = rd_stock_norm)) +
   geom_bar(stat = "identity", fill = cb_pal[6]) +
-  geom_text(aes(label = comma(round(rd_stock, 0))), vjust = -0.5, size = 3) +
+  geom_text(aes(label = comma(round(rd_stock_norm, 0))), vjust = -0.5, size = 3) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.05)),
                      labels = comma) +
-  labs(x = "", y = "Public agricultural R&D stock (million 2017 PPP$)") +
+  labs(x = "", y = "Public agricultrual R&D stock per million\n2017 PPP$ of agricultural value added") +
   theme_classic() 
+
