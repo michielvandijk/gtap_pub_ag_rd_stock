@@ -26,7 +26,7 @@ options(digits = 4)
 rd_stock_gtap_db <- read_csv(here("output_data/ag_rd_stock_gtap_db.csv"))
 
 # R&D investment data
-rd_investment_db <- read_csv(here("output_data/ag_rd_investment_gtap_db.csv"))
+rd_investment_gtap_db <- read_csv(here("output_data/ag_rd_investment_gtap_db.csv"))
 
 # Agricultural value added in 2017 PPP$ data from GRAPE macro database
 ag_va_db <- read_excel(here("input_data/macro_db_v1.0.0.xlsx")) |>
