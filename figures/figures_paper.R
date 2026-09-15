@@ -118,12 +118,12 @@ gamma_df |>
 # PROCESS AGRICULTURAL VALUE ADDED DATA --------------------------------------------------
 # ======================================================================================== 
 
-# We aggregate to GTAP12 with 145 regions.
+# We aggregate to GTAP12 with 145 regions and express in million 2017 PPP$.
 ag_va_gtap_db <- ag_va_db |>
   dplyr::select(-country) |>
   left_join(iso3c_gtap, by = "iso3c") |>
   group_by(year, gtap12, gtap12_name) |>
-  summarize(ag_gdp_ppp = sum(ag_gdp_ppp, na.rm = TRUE),
+  summarize(ag_gdp_ppp = sum(ag_gdp_ppp, na.rm = TRUE)/1000,
             .groups = "drop")
 
 # Identify GTAP regions with no R&D data
@@ -188,26 +188,29 @@ countrycode(setdiff(world_map$iso3c, iso3c_gtap$iso3c), "iso3c", "country.name")
 setdiff(world_map$iso3c, iso3c_gtap$iso3c)
 
 # Create figure labels
-breaks <- c(0, 15, 50, 250, Inf)
+breaks <- c(0, 2, 5, 25, Inf)
 labels <- paste0(
   format(head(breaks, -1), big.mark = ",", trim = TRUE),
   " – ",
   format(tail(breaks, -1), big.mark = ",", trim = TRUE)
 )
-labels[4] <- "> 250"
+labels[4] <- "> 25"
 
 # Link agricultural value added data to GTAP regions
 # Only select base year data and countries with data
+# Express R&D stock as percentage of value added
 gtap_base_year <- 2017
 rd_stock_gtap_by <- rd_stock_gtap_db |> 
   left_join(ag_va_gtap_db, by = c("gtap12", "year")) |>
   filter(year == gtap_base_year) |>
   filter(!(is.na(ag_gdp_ppp) | ag_gdp_ppp == 0)) |>
-  mutate(rd_stock_norm = rd_stock / (ag_gdp_ppp/1000000),
+  mutate(rd_stock_norm = (rd_stock / (ag_gdp_ppp)*100),
          rd_stock_norm_bin = cut(rd_stock_norm, 
                                  breaks = breaks, 
                                  labels = labels,
                                  include.lowest = TRUE))
+summary(rd_stock_gtap_by$rd_stock_norm)
+
 # Plot
 world_map |>
   filter(iso3c != "ATA") |>
@@ -221,7 +224,7 @@ world_map |>
     guide = guide_legend(title.position = "top", title.hjust = 0.5)) +
   theme_void() +
   theme(legend.position = "bottom") +
-  labs(fill = "Public agricultrual R&D stock per million\n2017 PPP$ of agricultural value added")
+  labs(fill = "Public agricultural R&D capital stock\n as a share of agricultural value added (%)")
 
 
 # BAR CHART ------------------------------------------------------------------------------
@@ -229,13 +232,13 @@ world_map |>
 # Select top 10 in terms of stock
 rd_stock_gtap_by |>
   arrange(desc(rd_stock_norm)) |>
-  filter(!gtap12 %in% c("sgp", "xef")) |>
+  filter(!gtap12 %in% c("xef")) |>
   slice_head(n = 10)  |>
   ggplot(aes(x = reorder(gtap12, -rd_stock_norm), y = rd_stock_norm)) +
   geom_bar(stat = "identity", fill = cb_pal[6]) +
   geom_text(aes(label = comma(round(rd_stock_norm, 0))), vjust = -0.5, size = 3) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.05)),
                      labels = comma) +
-  labs(x = "", y = "Public agricultrual R&D stock per million\n2017 PPP$ of agricultural value added") +
+  labs(x = "", y = "Public agricultural R&D capital stock\nas a share of agricultural value added (%)") +
   theme_classic() 
 
