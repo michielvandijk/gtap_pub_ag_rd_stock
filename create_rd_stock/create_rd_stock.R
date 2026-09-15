@@ -133,18 +133,19 @@ setdiff(iso3c_gtap$gtap12, rd_stock_gtap_db$gtap12)
 
 # We focus on recent period from 2004, the first GTAP year.
 # Note that because of the long lags (max 50 years), the R&D stock in 2004 might be already
-# affected by the R&D investment in the 1950s for which data generally missing (except for a few countries).
+# affected by the R&D investment in the 1950s for which data is generally missing (except for a few countries).
 # This means that the R&D stock from 2011 (1961, first year of R&D observation plus lag of 50 years) onwards,
-# is 100% build using all investment in previous years. Depending on the assumed lag,
+# is 100% built using all investment in previous years. Depending on the assumed lag,
 # R&D stock before 2011 might also be estimated using all relevant R&D investment data.
 
 period <- c(2004:2022)
 
-# Add zero for missing regions and years
+# Add zero for missing regions and years, add unit
 rd_stock_gtap_db <- rd_stock_gtap_db |>
   filter(year %in% period) |>
   dplyr::select(-gtap12_name) |>
-  complete(gtap12 = iso3c_gtap$gtap12, year = period, fill = list(rd_stock = 0))
+  complete(gtap12 = iso3c_gtap$gtap12, year = period, fill = list(rd_stock = 0)) |>
+  mutate(unit = "million 2017 PPP$")
 n_distinct(rd_stock_gtap_db$gtap12)
 
 # Create HAR object
@@ -173,7 +174,7 @@ rd_investment_gtap_db <- rd_investment_db |>
   left_join(iso3c_gtap, by = "iso3c") |>
   group_by(year, gtap12, gtap12_name) |>
   summarize(rd_investment = sum(rd_investment, na.rm = TRUE),
-            .groups = "drop")
+            .groups = "drop") 
 
 # Identify GTAP regions with no R&D data
 setdiff(rd_investment_gtap_db$gtap12, iso3c_gtap$gtap12)
@@ -184,7 +185,8 @@ rd_investment_gtap_db <- rd_investment_gtap_db |>
   dplyr::select(-gtap12_name) |>
   complete(gtap12 = iso3c_gtap$gtap12,
            year = c(min(rd_investment_db$year):max(rd_investment_db$year)),
-                    fill = list(rd_investment = 0))
+                    fill = list(rd_investment = 0)) |>
+  mutate(unit = "million 2017 PPP$")
 n_distinct(rd_investment_gtap_db$gtap12)
 
 # Create HAR object
